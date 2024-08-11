@@ -1,0 +1,16 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+#fileInput {
+    margin-bottom: 10px;
+}
+
+#resultImage {
+    display: none;
+    margin-top: 20px;
+    max-width: 100%;
+    height: auto;
+}
