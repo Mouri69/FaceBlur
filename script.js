@@ -13,11 +13,6 @@ document.getElementById('uploadButton').addEventListener('click', () => {
     const formdata = new FormData();
     formdata.append("image", fileInput.files[0], "file");
 
-    // Debugging: Log FormData contents
-    formdata.forEach((value, key) => {
-        console.log(key, value);
-    });
-
     const requestOptions = {
         method: "POST",
         headers: myHeaders,
@@ -28,16 +23,28 @@ document.getElementById('uploadButton').addEventListener('click', () => {
     fetch("https://Face-Blur.proxy-production.allthingsdev.co/face/editing/blur-face", requestOptions)
         .then((response) => {
             if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`HTTP error! Status: ${response.status} - ${text}`);
+                return response.json().then(json => {
+                    // Handle errors more robustly
+                    const errorMessage = json.message || 'Unknown error occurred';
+                    console.error('Error response:', json);
+                    alert(`Error: ${errorMessage}`);
+                    throw new Error(`HTTP Error ${response.status}: ${errorMessage}`);
+                });
+            } else {
+                return response.json().then((json) => {
+                    if (json.error_code === 0) {
+                        // Successfully processed, show the image
+                        const resultImage = document.getElementById('resultImage');
+                        resultImage.src = json.data.image_url;
+                        resultImage.style.display = 'block';
+                    } else {
+                        // Handle API-specific errors
+                        console.error('API Error response:', json);
+                        alert(`API Error: ${json.error_detail.message || 'Unknown error occurred'}`);
+                        throw new Error(`API Error: ${JSON.stringify(json)}`);
+                    }
                 });
             }
-            return response.blob(); // Assuming the response is an image blob
-        })
-        .then((blob) => {
-            const resultImage = document.getElementById('resultImage');
-            resultImage.src = URL.createObjectURL(blob);
-            resultImage.style.display = 'block';
         })
         .catch((error) => {
             console.error('There was a problem with the fetch operation:', error);
